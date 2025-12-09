@@ -1,7 +1,9 @@
 # main.py
 from scrap1 import collect_links
 from scraper import scrape_jobs_from_file
-from email_alert import send_email
+
+
+from email_alert import sent_email
 
 
 def main():
@@ -13,8 +15,8 @@ def main():
     new_jobs = scrape_jobs_from_file()
     print(f"New jobs found: {new_jobs}")
 
-    if new_jobs > 0:
-        send_email(new_jobs)
+    if new_jobs >= 0:
+        sent_email(new_jobs)
         print("Email alert sent.")
 
     print("Task completed.")

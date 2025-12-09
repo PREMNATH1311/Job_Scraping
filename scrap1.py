@@ -12,7 +12,7 @@ from selenium.webdriver.chrome.service import Service
 
 Start_url="https://www.freshersworld.com/jobs/category/it-software-job-vacancies"
 
-def collect_links(output_file="jobs.url.txt"):
+def collect_links(output_file="job_url.txt"):
     options=webdriver.ChromeOptions()
     options.add_experimental_option("detach", True)
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
@@ -39,7 +39,7 @@ def collect_links(output_file="jobs.url.txt"):
 
     
     page_number=1
-    while True:
+    while page_number<=15:
         
         link_contains=wait.until(EC.presence_of_all_elements_located((By.XPATH,'//div[@class="col-md-12 col-lg-12 col-xs-12 padding-none job-container jobs-on-hover top_space"]')))
         page_link=[]
