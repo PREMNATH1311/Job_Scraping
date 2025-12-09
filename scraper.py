@@ -2,50 +2,65 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from db import insert_unique_job
 
-# ------------------------------
-# Read links from file
-# ------------------------------
 file_path = "job_url.txt"
 links = []
+
 def scrape_jobs_from_file(file_path=file_path):
+
+    # ------------------------------
+    # Read links from file
+    # ------------------------------
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if line.startswith("http"):  # skip page markers
+            if line.startswith("http"):
                 links.append(line)
 
     print(f"Total links found: {len(links)}")
 
     # ------------------------------
-    # Selenium Setup
+    # Selenium Setup (HEADLESS)
     # ------------------------------
     options = Options()
-    options.add_argument("--start-maximized")
-    driver = webdriver.Chrome(options=options)
+
+    # Headless required for GitHub Actions
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+
+    # Optional flags (good for stability)
+    options.add_argument("--disable-notifications")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+
+    # IMPORTANT: Chromedriver path in GitHub Actions
+    service = Service("/usr/bin/chromedriver")
+
+    driver = webdriver.Chrome(service=service, options=options)
     wait = WebDriverWait(driver, 10)
 
     driver.get("https://www.google.com")  # dummy homepage
 
     # ------------------------------
-    # Scrape Each Job
+    # Scrape each job URL
     # ------------------------------
     new_job_count = 0
 
     for index, url in enumerate(links, start=1):
         print(f"\n[{index}] Opening: {url}")
 
+        # Open in new tab
         driver.execute_script("window.open(arguments[0], '_blank');", url)
         driver.switch_to.window(driver.window_handles[-1])
         time.sleep(2)
-
-        # ------------------------------
-        # SCRAPE FIELDS
-        # ------------------------------
 
         def safe_find(xpath):
             try:
@@ -53,7 +68,6 @@ def scrape_jobs_from_file(file_path=file_path):
             except:
                 return "N/A"
 
-        # Now scrape needed fields
         title = safe_find('//div[@class="job-role  padding-none"]')
         company = safe_find('//div[@class=" padding-none company-name"]')
         salary = safe_find('//span[@style="margin-top: 2px;"]')
@@ -65,9 +79,6 @@ def scrape_jobs_from_file(file_path=file_path):
         locality = safe_find('//span[@style="margin-left:35px;"]')
         state = safe_find('(//span[@style="margin-left:112px;"]//a)[1]')
 
-        # ------------------------------
-        # STORE DATA IN DICT
-        # ------------------------------
         job_data = {
             "job_url": url,
             "title": title,
@@ -84,16 +95,13 @@ def scrape_jobs_from_file(file_path=file_path):
 
         print(job_data)
 
-        # ------------------------------
-        # SAVE TO MONGODB
-        # ------------------------------
         if insert_unique_job(job_data):
             print("→ New job added to MongoDB")
             new_job_count += 1
         else:
             print("→ Job already exists, skipped")
 
-        # Close the job tab
+        # Close tab
         driver.close()
         driver.switch_to.window(driver.window_handles[0])
 

@@ -13,12 +13,23 @@ from selenium.webdriver.chrome.service import Service
 Start_url="https://www.freshersworld.com/jobs/category/it-software-job-vacancies"
 
 def collect_links(output_file="job_url.txt"):
-    options=webdriver.ChromeOptions()
-    options.add_experimental_option("detach", True)
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless=new")         # REQUIRED for GitHub Actions
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     options.add_argument("--disable-notifications")
     options.add_argument("--disable-popup-blocking")
     options.add_argument("--disable-infobars")
+    options.add_argument("--window-size=1920,1080")
+
+    # Optional user-agent
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+
+    # ⚠️ IMPORTANT: Path to Chromedriver in Ubuntu runner
+    service = Service("/usr/bin/chromedriver")
+
+    driver = webdriver.Chrome(service=service, options=options)
 
     # prefs = {
     #     "profile.default_content_setting_values.notifications": 2,  # block notifications
@@ -27,7 +38,7 @@ def collect_links(output_file="job_url.txt"):
     # }
 
     # options.add_experimental_option("prefs", prefs)
-    driver = webdriver.Chrome(service=Service(),options=options)
+    
     wait=WebDriverWait(driver,10)
     sleep=time.sleep(2)
 
