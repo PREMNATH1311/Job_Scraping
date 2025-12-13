@@ -50,7 +50,7 @@ def collect_links(output_file="job_url.txt"):
 
     
     page_number=1
-    while page_number<=15:
+    while page_number<=10:
         
         link_contains=wait.until(EC.presence_of_all_elements_located((By.XPATH,'//div[@class="col-md-12 col-lg-12 col-xs-12 padding-none job-container jobs-on-hover top_space"]')))
         page_link=[]
