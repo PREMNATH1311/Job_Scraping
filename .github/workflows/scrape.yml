@@ -45,6 +45,8 @@ jobs:
     - name: Run scraper
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
-        EMAIL: ${{ secrets.EMAIL }}
-        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        EMAIL_USER: ${{ secrets.EMAIL }}
+        EMAIL_PASS: ${{ secrets.EMAIL_PASSWORD }}
+        EMAIL_TO: ${{ secrets.EMAIL }}   # or another receiver
       run: python main.py
+
